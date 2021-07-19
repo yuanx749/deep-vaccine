@@ -114,7 +114,7 @@ if __name__ == '__main__':
         'batch_size': 1024,
         'emb_size': 32,
         'kernel_size': 5,
-        'hidden_size': 64,
+        'hidden_size': 128,
         'dropout': 0.2,
         'pooling': True
     }

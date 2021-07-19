@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import Dataset
 from itertools import product
 
@@ -156,3 +157,22 @@ class EpitopeRawDataset(EpitopeDataset):
         tokens = nn.utils.rnn.pad_sequence(tokens, batch_first=True, padding_value=self.tokenizer.stoi['<pad>'])
         labels = torch.tensor(labels)
         return tokens, labels, seqs
+
+class NpyDataset(Dataset):
+    """
+    A class of float vectors with binary labels.
+    Input: a pair of posivite and negative npy files.
+    """
+    def __init__(self, positive_file, negative_file, data_dir='./data'):
+        positive_data = np.load(os.path.join(data_dir, positive_file))
+        negative_data = np.load(os.path.join(data_dir, negative_file))
+        self.data = np.vstack((positive_data, negative_data)).astype(np.float32)
+        self.labels = [1]*len(positive_data) +  [0]*len(negative_data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        data = self.data[idx]
+        label = self.labels[idx]
+        return data, label

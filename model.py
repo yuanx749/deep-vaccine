@@ -43,3 +43,20 @@ class RNN(nn.Module):
         outputs = self.relu(outputs)
         outputs = self.fc2(outputs)
         return outputs
+
+class FNN(nn.Module):
+    def __init__(self, in_size):
+        super().__init__()
+        self.in_size = in_size
+        self.sequential = nn.Sequential(
+            nn.Linear(in_size, 90),
+            nn.Tanh(),
+            nn.Linear(90, 60),
+            nn.Tanh(),
+            nn.Linear(60, 20),
+            nn.Tanh(),
+            nn.Linear(20, 2),
+        )
+
+    def forward(self, inputs):
+        return self.sequential(inputs)
