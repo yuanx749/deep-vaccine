@@ -1,4 +1,6 @@
 import random
+import os
+import socket
 import numpy as np
 import torch
 import torch.nn as nn
@@ -6,6 +8,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from datetime import datetime
 
 from data import Tokenizer, Tokenizer2, BaselineDataset, EpitopeDataset, AntigenDataset
 from model import RNN
@@ -72,7 +75,10 @@ def run_experiment(hparams, epochs=50):
     scheduler4 = torch.optim.lr_scheduler.CyclicLR(optimizer, 0.0001, hparams['lr'], step_size_up=100, cycle_momentum=False)
     criterion = nn.CrossEntropyLoss()
 
-    writer = SummaryWriter()
+    current_time = datetime.now().strftime('%b%d_%H-%M-%S')
+    log_dir = os.path.join('runs', current_time + '_' + socket.gethostname())
+    writer = SummaryWriter(log_dir=log_dir)
+    model_path = os.path.join(log_dir, 'lstm.pt')
 
     best_test_loss = 0
     best_test_acc = 0
@@ -90,7 +96,7 @@ def run_experiment(hparams, epochs=50):
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             best_test_loss = test_loss
-            torch.save(model, 'lstm.pt')
+            torch.save(model, model_path)
     
     writer.add_hparams(hparams, {'hparam/accuracy': best_test_acc})
     
@@ -99,7 +105,7 @@ def run_experiment(hparams, epochs=50):
     model = model.to(device)
     writer.add_graph(model, inputs)
     
-    model = torch.load('lstm.pt')
+    model = torch.load(model_path)
     train_labels, train_probs = predict(model, train_loader)
     test_labels, test_probs = predict(model, test_loader)
     figure = plot_roc_curve(train_labels, train_probs, test_labels, test_probs)

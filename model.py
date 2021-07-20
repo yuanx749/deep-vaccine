@@ -1,3 +1,4 @@
+import math
 import torch
 import torch.nn as nn
 
@@ -44,19 +45,45 @@ class RNN(nn.Module):
         outputs = self.fc2(outputs)
         return outputs
 
-class FNN(nn.Module):
-    def __init__(self, in_size):
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout, max_len=100):
         super().__init__()
-        self.in_size = in_size
-        self.sequential = nn.Sequential(
-            nn.Linear(in_size, 90),
-            nn.Tanh(),
-            nn.Linear(90, 60),
-            nn.Tanh(),
-            nn.Linear(60, 20),
-            nn.Tanh(),
-            nn.Linear(20, 2),
-        )
+        self.dropout = nn.Dropout(p=dropout)
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        x: tensor of shape (batch_size, seq_len, emb_size).
+        """
+        x = x + self.pe[:, :x.size(1), :]
+        return self.dropout(x)
+
+class Transformer(nn.Module):
+    def __init__(self, tokenizer, emb_size=32, num_head=2, hidden_size=64, num_layers=2, dropout=0.0):
+        super().__init__()
+        self.emb_size = emb_size
+        self.pos_encoder = PositionalEncoding(emb_size, dropout)
+        encoder_layers = nn.TransformerEncoderLayer(emb_size, num_head, hidden_size, dropout)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers)
+        self.encoder = nn.Embedding(tokenizer.vocab_size, emb_size)
+        self.decoder = nn.Linear(emb_size, 2)
 
     def forward(self, inputs):
-        return self.sequential(inputs)
+        """
+        Inputs: tensor of shape (batch_size, seq_len).
+        Outputs: tensor of shape (batch_size, 2).
+        """
+        inputs = self.encoder(inputs) * math.sqrt(self.emb_size)
+        inputs = self.pos_encoder(inputs)
+        inputs = inputs.transpose(0, 1)
+        outputs = self.transformer_encoder(inputs)
+        outputs = outputs.transpose(0, 1)
+        outputs = torch.mean(outputs, 1)
+        outputs = self.decoder(outputs)
+        return outputs
