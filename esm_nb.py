@@ -3,16 +3,14 @@
 # %%
 import numpy as np
 import torch
-import torch.nn as nn
 import esm
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from tqdm.notebook import tqdm
 from sklearn.linear_model import LogisticRegression
 
 # %%
 from data import Tokenizer, Tokenizer2, BaselineDataset, EpitopeDataset, AntigenDataset, EpitopeRawDataset
-from model import RNN
-from utils import predict, plot_roc_curve
+from utils import plot_roc_curve
 
 # %%
 pretrained_model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()

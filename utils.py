@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from sklearn import metrics
+from sklearn.manifold import TSNE
 
 @torch.no_grad()
 def predict(model, dataloader):
@@ -39,4 +39,13 @@ def plot_roc_curve(train_labels, train_probs, test_labels, test_probs):
     axes.set_xlabel('FPR')
     axes.set_ylabel('TPR')
     axes.legend()
+    return fig
+
+def plot_representations(representations, labels):
+    tsne = TSNE(random_state=42)
+    X = tsne.fit_transform(representations)
+    fig, axes = plt.subplots(figsize=(4.8, 4.8))
+    axes.scatter(X[:,0], X[:,1], c=labels, cmap='tab10', vmax=10, alpha=0.7, linewidths=0)
+    axes.set_xticks([])
+    axes.set_yticks([])
     return fig
