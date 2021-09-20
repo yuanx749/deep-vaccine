@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import Dataset
 from itertools import product
+from scipy import linalg as LA
 
 def read_fasta(filename, data_dir='./data'):
     seqs = []
@@ -24,6 +25,14 @@ def read_txt(filename, data_dir='./data'):
         lines = [line for line in lines if line]
     return lines
 
+def read_matrix(filename, data_dir='./data'):
+    mat = []
+    with open(os.path.join(data_dir, filename)) as f:
+        aa_lst = f.readline().split()
+        for line in f:
+            mat.append(list(map(float, line.split()[1:])))
+    return np.array(mat), aa_lst
+
 class Tokenizer:
     def __init__(self, tokens=['<unk>', '<pad>', '<eos>'], max_len=50):
         self.tokens = tokens
@@ -31,6 +40,11 @@ class Tokenizer:
         self.itos = tokens + list('ACDEFGHIKLMNPQRSTVWY')
         self.stoi = dict(zip(self.itos, range(len(self.itos))))
         self.vocab_size = len(self.itos)
+
+    def initialize_embedding(self, filename):
+        mat, _ = read_matrix(filename)
+        mat_scale = mat / LA.norm(mat) * len(mat)
+        return torch.FloatTensor(mat_scale)
     
     def tokenize(self, seq):
         """
@@ -75,7 +89,7 @@ class Tokenizer2(Tokenizer):
 class BaselineDataset(Dataset):
     """
     A class of epitope B + epitope T sequences with binary labels.
-    Inputs: a file of aa sequences and a file of lables.
+    Inputs: a file of aa sequences and a file of labels.
     """
     def __init__(self, seq_file, label_file, tokenizer=Tokenizer(), data_dir='./data'):
         self.tokenizer = tokenizer

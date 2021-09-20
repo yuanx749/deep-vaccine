@@ -8,6 +8,9 @@ class RNN(nn.Module):
         self.tokenizer = tokenizer
         self.pooling = pooling
         self.embedding = nn.Embedding(tokenizer.vocab_size, emb_size)
+        # weight = torch.eye(tokenizer.vocab_size)
+        # weight[-20:, -20:] = tokenizer.initialize_embedding('PMBEC.txt')
+        # self.embedding = nn.Embedding.from_pretrained(weight, freeze=False)
         self.cnn = nn.Conv1d(emb_size, emb_size, kernel_size, stride=1, padding=(kernel_size-1)//2)
         self.bn1 = nn.BatchNorm1d(emb_size)
         self.lstm = nn.LSTM(emb_size, hidden_size, num_layers, batch_first=True, dropout=dropout, bidirectional=bidirectional)

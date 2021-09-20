@@ -35,7 +35,7 @@ def plot_roc_curve(train_labels, train_probs, test_labels, test_probs):
     test_fpr, test_tpr, thresholds = metrics.roc_curve(test_labels, test_probs)
     fig, axes = plt.subplots()
     axes.plot(train_fpr, train_tpr, label='ROC AUC (training) = {:.2f}'.format(metrics.auc(train_fpr, train_tpr)))
-    axes.plot(test_fpr, test_tpr, label='ROC AUC (testing) = {:.2f}'.format(metrics.auc(test_fpr, test_tpr)))
+    axes.plot(test_fpr, test_tpr, label='ROC AUC (test) = {:.2f}'.format(metrics.auc(test_fpr, test_tpr)))
     axes.set_xlabel('FPR')
     axes.set_ylabel('TPR')
     axes.legend()

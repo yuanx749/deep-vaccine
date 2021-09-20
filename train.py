@@ -54,16 +54,18 @@ def train_eval(model, dataloader, criterion, optimizer=None, scheduler=None, is_
 
         predictions = torch.argmax(outputs, dim=1)
         total_correct += torch.sum(predictions.eq(labels))
-    # if is_train:
-    #     print(optimizer.param_groups[0]['lr'])
+
     return total_loss / len(dataloader.dataset), total_correct / len(dataloader.dataset)
 
 def run_experiment(hparams, epochs=50):
 
     tokenizer = Tokenizer(max_len=40)
-    train_dataset = EpitopeDataset('Positive_train.txt', 'Negative_train.txt', tokenizer=tokenizer, data_dir='./data')
+    train_dataset_ = EpitopeDataset('Positive_train.txt', 'Negative_train.txt', tokenizer=tokenizer, data_dir='./data')
     test_dataset = EpitopeDataset('Positive_test.txt', 'Negative_test.txt', tokenizer=tokenizer, data_dir='./data')
-    train_loader = DataLoader(train_dataset, batch_size=hparams['batch_size'], shuffle=True, collate_fn=train_dataset.collate_fn)
+    valid_size = 1000
+    train_dataset, valid_dataset = random_split(train_dataset_, [len(train_dataset_) - valid_size, valid_size])
+    train_loader = DataLoader(train_dataset, batch_size=hparams['batch_size'], shuffle=True, collate_fn=train_dataset.dataset.collate_fn)
+    valid_loader = DataLoader(valid_dataset, batch_size=hparams['batch_size'], shuffle=False, collate_fn=valid_dataset.dataset.collate_fn)
     test_loader = DataLoader(test_dataset, batch_size=hparams['batch_size'], shuffle=False, collate_fn=test_dataset.collate_fn)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -80,32 +82,34 @@ def run_experiment(hparams, epochs=50):
     writer = SummaryWriter(log_dir=log_dir)
     model_path = os.path.join(log_dir, 'lstm.pt')
 
-    best_test_loss = 0
-    best_test_acc = 0
+    best_valid_loss = 0
+    best_valid_acc = 0
     for epoch_idx in range(epochs):
         train_loss, train_acc = train_eval(model, train_loader, criterion, optimizer)
-        test_loss, test_acc = train_eval(model, test_loader, criterion, is_train=False)
+        valid_loss, valid_acc = train_eval(model, valid_loader, criterion, is_train=False)
         scheduler2.step()
         
         print('Epoch {}'.format(epoch_idx))
-        print('Training Loss: {:.4f}. Test Loss: {:.4f}. '.format(train_loss, test_loss))
-        print('Training Accuracy: {:.4f}. Test Accuracy: {:.4f}. '.format(train_acc, test_acc))
-        writer.add_scalars('Loss', {'train': train_loss, 'test': test_loss}, epoch_idx)
-        writer.add_scalars('Accuracy', {'train': train_acc, 'test': test_acc}, epoch_idx)
+        print('Training Loss: {:.4f}. Valid Loss: {:.4f}. '.format(train_loss, valid_loss))
+        print('Training Accuracy: {:.4f}. Valid Accuracy: {:.4f}. '.format(train_acc, valid_acc))
+        writer.add_scalars('Loss', {'train': train_loss, 'Valid': valid_loss}, epoch_idx)
+        writer.add_scalars('Accuracy', {'train': train_acc, 'Valid': valid_acc}, epoch_idx)
 
-        if test_acc > best_test_acc:
-            best_test_acc = test_acc
-            best_test_loss = test_loss
+        if valid_acc > best_valid_acc:
+            best_valid_acc = valid_acc
+            best_valid_loss = valid_loss
             torch.save(model, model_path)
     
-    writer.add_hparams(hparams, {'hparam/accuracy': best_test_acc})
+    model = torch.load(model_path)
+    _, test_acc = train_eval(model, test_loader, criterion, is_train=False)
+    print("Test Accuracy: {:.4f}. ".format(test_acc))
+    writer.add_hparams(hparams, {'hparam/accuracy': test_acc})
     
     inputs, labels = next(iter(train_loader))
     inputs = inputs.to(device)
     model = model.to(device)
     writer.add_graph(model, inputs)
     
-    model = torch.load(model_path)
     train_labels, train_probs = predict(model, train_loader)
     test_labels, test_probs = predict(model, test_loader)
     figure = plot_roc_curve(train_labels, train_probs, test_labels, test_probs)
