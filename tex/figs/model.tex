@@ -1,0 +1,30 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\begin{document}
+\begin{tikzpicture}
+[node distance=4mm,
+box/.style={rectangle, rounded corners, minimum width=2.8cm, minimum height=4cm, text width=2.8cm, align=center, draw=blue, fill=blue!40},
+smallbox/.style={rectangle, rounded corners, minimum width=2cm, minimum height=0.5cm, text width=2.2cm, align=center, draw=blue, fill=blue!20}]
+\node[align=center] (0) at (0,0) {Input:\\tokenized\\peptide\\sequences};
+\node[box, right=of 0] (1) {\textbf{Embedding}\\[\baselineskip]size = 32\\dropout = 0.2};
+\node[box, right=of 1] (2) {\textbf{Conv1d}\\[\baselineskip]in size = 32\\out size = 32\\kernel = 5};
+\node[box, right=of 2] (3) {\textbf{Bi-LSTM}\\[\baselineskip]layer = 2\\hidden size = 128\\dropout = 0.2\\[\baselineskip]\textbf{Pooling}};
+\node [box, right=of 3] (4) {
+\begin{tikzpicture}[node distance=4mm]
+\node[smallbox] (40) {\textbf{Linear layer}\\out size = 32};
+\node[smallbox, below=of 40] (41) {\textbf{BatchNorm}};
+\node[smallbox, below=of 41] (42) {\textbf{ReLU}};
+\node[smallbox, below=of 42] (43) {\textbf{Linear layer}\\out size = 2};
+\foreach \from in {40,...,42}
+\pgfmathtruncatemacro{\to}{\from + 1}
+\draw[->] (\from) -- (\to);
+\end{tikzpicture}
+};
+\node [align=center, right=of 4] (5) {Output:\\vaccine\\candidates\\classification};
+\foreach \from in {0,...,4}
+\pgfmathtruncatemacro{\to}{\from + 1}
+\draw[->] (\from) -- (\to);
+\end{tikzpicture}
+\end{document}

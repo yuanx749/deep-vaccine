@@ -1,4 +1,10 @@
 runs*/
+tex/*
+!tex/*.tex
+!tex/*.bib
+!tex/figs/
+tex/figs/*
+!tex/figs/*.tex
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

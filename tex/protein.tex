@@ -1,0 +1,142 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\usepackage[hyphens,spaces]{url}
+\usepackage{subfig}
+%\usepackage[bookmarks=false]{hyperref}
+
+%\hypersetup{nolinks=true}
+
+\begin{document}
+
+\title{Predicting Multi-epitope Vaccine Candidates Using Natural Language Processing and Deep Learning
+}
+
+\author{\IEEEauthorblockN{Xiao Yuan, Daniel Bibl, Kahlil Khan, Lei Sun}
+\IEEEauthorblockA{\textit{College of Computing} \\
+\textit{Georgia Institute of Technology}\\
+Atlanta, USA \\
+\{xyuan8, dbibl3, kkhan37, lsun301\}@gatech.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+\emph{In silico} approach can make vaccine designs more efficient and cost-effective. It complements the traditional process and becomes extremely valuable in coping with pandemics such as COVID-19. A recent study proposed an artificial intelligence-based framework to predict and design multi-epitope vaccines for the SARS-CoV-2 virus. However, we found several issues in its dataset design as well as its neural network design. To achieve more reliable predictions of the potential vaccine subunits, we create a more reliable and larger dataset for machine learning experiments. We apply natural language processing techniques and build neural networks composed of convolutional layer and recurrent layer to identify peptide sequences as vaccine candidates. We also train a classifier using embeddings from a pre-trained Transformer protein language model, which provides a baseline for comparison. Experimental results demonstrate that our models achieve high performance in classification accuracy and the area under the receiver operating characteristic curve.
+\end{abstract}
+
+\begin{IEEEkeywords}
+peptide, neural network, supervised learning, representation
+\end{IEEEkeywords}
+
+\section{Introduction}
+Traditionally, vaccine design is a costly and time-intensive process that requires growing, isolating, and inactivating pathogens. \emph{In silico} methods can significantly accelerate the design process by filtering out potential vaccine candidates from the vast chemical space of molecules. Among different types of vaccines, multi-epitope vaccines are considered promising against viral infections. An epitope is a portion of the amino acid sequence of an antigen molecule. B cells and T cells can recognize epitopes, inducing adaptive immune responses, which are critical in fighting against the virus. In the humoral response, B cells are activated and secrete antibodies that help eliminate pathogens. In the cellular response, T cells bind epitopes presented by major histocompatibility complex (MHC) molecules on the surface of host cells and destroy the infected cells. Compared to single-epitope vaccines, multi-epitope vaccines that contain both B-cell and T-cell epitopes can induce strong humoral and cellular immune responses simultaneously \cite{Zhang_2017}. A traditional \emph{in silico} multi-epitope vaccine design process usually involves using numerous computational tools for vaccine subunits prediction \cite{Yang_2021}. Researchers have to manually integrate and comprehensively evaluate these results, which causes low efficiency in dealing with fast-spreading viruses. The sudden emergence of pandemics such as COVID-19 imposes greater challenges and calls for more efficient \emph{in silico} vaccine design approaches.
+
+In a recent study, Yang et al. attempted to develop a deep learning approach for multi-epitope vaccine design \cite{Yang_2021}. The proposed pipeline is composed of several bioinformatics tools. With the aim of replacing multiple predictions in the traditional process, one component is a deep neural network (DNN) architecture that predicts potential subunits for downstream validation and construction. However, the DNN module is a two-stage approach rather than an end-to-end approach. Hence it does not fully harness the power of deep learning. Feature engineering is required to transform the raw amino acid sequences into numerical vectors using chemical descriptors. This leads to overhead in the training and inference of the network. Moreover, we observed some problems in their dataset design after closely examining the code. The dataset is only based on a few thousand unique samples, though it has nearly a million objects. The highly correlated data may not contain sufficient information for a complex neural network to learn and generalize well. Moreover, it seems that the test set contains epitope sequences in the training set.
+
+Our study aims to develop an end-to-end deep learning framework that leverages the existing large quantity of epitope data to predict multi-epitope vaccine candidates. Reliable data and models are essential in the applications of deep learning. We therefore recreated the dataset and redesigned the neural networks for predicting multi-epitope vaccine subunits. We collected T-cell and B-cell epitopes data from the Immune Epitope Database (IEDB) \cite{Fleri_2017a}. Our datasets contain 160000 peptide sequences totally, a size roughly ten times the previous datasets. The data are split in a way such that the same epitope does not appear in both the training set and the hold-out test set, thus avoiding data leakage and providing a fair assessment of the trained models. Inspired by the success of deep learning in natural language processing (NLP) and of applying NLP methods on biological sequences, we designed and trained models based on long short-term memory (LSTM) architecture for epitopes. In addition, acting as a baseline, a classifier was trained on the embeddings extracted from a large pre-trained model. Our best model yields about 80\% accuracy on the test set, approximately 10\% better than the baseline. The experiment results on our datasets and models demonstrate that neural networks can learn biologically meaningful representations in the internal layers. Deep learning can successfully identify the peptide sequences that have the potential to produce robust immune responses. Our models and experiments are implemented and conducted using PyTorch and Python. The code can be found at \url{https://github.com/yuanx749/deep-vaccine}.
+
+\section{Related Work}
+For decades, artificial intelligence-based methods such as hidden Markov model \cite{Larsen_2006}, support vector machine \cite{EL_Manzalawy_2008}, genetic algorithms \cite{Fischer_2006}, have been applied in vaccine design regarding only B-cell or T-cell epitopes. Our study is motivated by the work of Yang et al \cite{Yang_2021}. In their original datasets, T-cell epitope and B-cell epitope were concatenated such that the positive set was formed by taking Cartesian products (T$\times$B and B$\times$T) that cover all the combinations of positive T-cell and B-cell epitopes. The negative set was constructed in the same way on negative T-cell and B-cell epitopes. The original data, however, has only thousands of unique epitope sequences. When trained on this small amount of information, DNN models, usually having a large number of parameters, are prone to overfitting due to over-parameterization. They processed each sequence into a fixed-length vector using Z-descriptors \cite{Hellberg_1987} and auto-cross covariance (ACC) transformation \cite{Wold_1993} as the input to the DNN. The DNN contains several convolutional neural network (CNN) layers followed by several fully connected layers. Nonetheless, the use of CNN seems to be not so well-grounded because the order of the elements in the input vectors is permutable, unlike images or sequences that have inherent orders in their elements.
+
+The primary structure of a protein, which is the linear sequence of amino acids, encodes the structural and functional information of the protein. Deep learning models, including CNN and recurrent neural network (RNN), have been successfully applied on protein sequences in several tasks, such as structure prediction \cite{Klausen_2019}, subcellular localization \cite{S_nderby_2015}, predicting binding to other proteins \cite{Vielhaben_2020}, and many others \cite{rao2019evaluating}. There is no need to convert the sequences into numerical vectors as in classical machine learning methods. Just like processing the text sequences, the concepts and methods in NLP can be adopted to process the protein sequences. In recent years, attention-based models such as Transformers have become the state of the art in NLP \cite{vaswani2017attention}. Transformers make fewer assumptions on the structures than CNN and RNN, and they produce great performance when trained on large datasets. To utilize the vast amount of unlabeled data, researchers developed different Transformer-based models and trained them on millions to billions of protein sequences through self-supervised learning using masked language modeling \cite{Elnaggar_2021,Nambiar_2020,Rives_2021}. The meaningful embeddings learned from the sequences are helpful across a range of supervised machine learning tasks on proteins with labels.
+
+\section{Methods}
+\subsection{Datasets}
+We collected the epitope data from IEDB, a public database that contains data of experimentally measured immune epitopes \cite{Fleri_2017a}. We chose T-cell and B-cell epitopes data, using only linear peptides with continuous amino acids. Positive-T, negative-T, positive-B, and negative-B datasets were constructed from the IEDB website. Here positive and negative refer to the outcome of the assays \cite{Fleri_2017b}. Note that T-cell epitopes relevant to either MHC class 1 or class 2 molecules are selected, as both can present peptide fragments to T-cells and induce immune responses to pathogens \cite{janeway2001major}. The duplicated between positive and negative datasets were removed. For each of the four datasets, 40000 sequences were randomly sampled and split into training and test sets, with 20\% in the test set, which is held out from model training and hyperparameter tuning. Next, positive epitopes were concatenated one by one (T$+$B), and the sequences were randomly shuffled and concatenated (B$+$T), to avoid the same pair of T-cell and B-cell epitopes existing twice in the concatenated sequences. The same operation was done on the negative epitopes. The split before concatenation ensures no overlapping epitope fragments between different datasets after combining T-cell and B-cell epitopes.
+
+To sum up, our dataset is designed to address several important matters in machine learning. It contains a large variety of data (160000 samples) suitable for deep learning while still manageable in computation time. It is balanced, with an equal number of samples in positive and negative categories. It could provide a fair evaluation of the generalizability of models on unseen data since there is no data leakage to the training set.
+
+\begin{figure*}
+\includegraphics[width=\textwidth]{figs/model}
+\caption{The architecture of the best model.}
+\label{fig1}
+\end{figure*}
+
+\subsection{Models}
+We formulate the problem as a binary classification problem in machine learning. The goal is to train a classifier that takes raw peptide sequences as input and predicts whether each sequence is a potential vaccine subunit. A potential vaccine subunit contains both positive T-cell and B-cell epitopes and thus can trigger strong immune responses.
+
+The raw protein sequences are treated as a language with an alphabet of 20 characters representing 20 amino acids. Following the ideas from NLP, the raw sequences are tokenized and encoded before being fed as inputs to neural networks. Each amino acid corresponds to a token. An $<$eos$>$ token is added at the end of each tokenized sequence, and $<$pad$>$ tokens are applied after $<$eos$>$ to pad a batch of sequences to the same size. A maximum length is set to avoid too many padding tokens in a batch. The tokenized sequences are then encoded as sequences of integers, each unique token being associated with a unique integer index.
+
+Our model consists of an embedding layer, a CNN layer, RNN layers, and fully connected layers. The embedding layer converts the input integer tensor of shape $N\times S$ into a numeric tensor of shape $N\times S\times E$, where $N$ is the batch size, $S$ is the sequence length, $E$ is the embedding size. The embedding layer is basically one-hot encoding followed by a linear transformation, which means each row vector of length $E$ in its weight matrix corresponds to a token. Once trained, the distance between these vectors will reflect the similarity of the corresponding tokens or amino acids, as shown in the next section. Rather than initializing the learnable weights sampled from standard normal distribution $N(0, 1)$ by default, we also explore initialization using predefined weights. Specifically, peptide:MHC binding energy covariance (PMBEC) matrix is used. PMBEC quantifies the similarities between each of the 20 canonical amino acids in the context of peptide binding to MHC molecules \cite{Kim_2009}. We represent each amino acid by the corresponding row vector in the PMBEC matrix. Hierarchical clustering on these vectors results in groupings that largely agree with the physicochemical properties of amino acid residues. Because of the close relation between peptide-protein binding and immune recognition, the PMBEC matrix could be a good heuristic in our vaccine prediction task. Other options include commonly used BLOSUM \cite{Henikoff_1992} and PAM \cite{dayhoff197822} matrices in bioinformatics.
+
+The RNN, which can handle input sequences of varying lengths, is the core of the model. Specifically, we use a two-layer LSTM. LSTM has been shown to learn long-term dependencies and handle the vanishing gradient problem successfully \cite{Hochreiter_1997}. Unlike time series forecasting problems, there is no past or future in a protein sequence. Hence, we use bidirectional LSTM that exploits the whole context of a sequence in both directions to help prediction \cite{Graves}. The weights of the LSTM are initialized from a uniform distribution. The outputs of the LSTM are representations of sequences with shape $N\times S\times H$, where $H$ is the hidden size. Then they go through average pooling along the sequence dimension. The resultant $N\times H$ array is passed to a two-layer feedforward network with rectiﬁed linear unit (ReLU) activation for classification. ReLU becomes popular for its computational efficiency, and it does not cause the vanishing gradient problem during training \cite{glorot2011deep}. The weights of the convolutional layer and the linear layers are initialized using a uniform distribution according to \cite{He_2015}. Figure \ref{fig1} shows the architecture and the hyperparameters of the best model in detail.
+
+We also built a four-layer fully connected network similar to the one in \cite{Yang_2021}. Before being passed into the network, each protein sequence is converted into a 45-dimensional vector. Specifically, each amino acid is represented as a three-dimensional vector through Z-descriptors \cite{Hellberg_1987}, and the whole sequence is transformed by ACC transformation \cite{Wold_1993}. Alternatively, we trained a logistic regression (LR) model on the embeddings from ESM-1b, a pre-trained language model for proteins developed by Facebook \cite{Rives_2021}. To provide the input to LR, we retrieved the 1280-dimensional embedding of the $<$cls$>$ token, which could encode the biochemical properties and structural information of a protein.
+
+\section{Experiments and Results}
+Binary cross entropy loss was used in training to reflect the probabilities of the input sequences being positive or negative candidates. Different regularization techniques were applied to reduce overfitting, including dropout \cite{srivastava2014dropout}, batch normalization \cite{ioffe2015batch}, and weight decay. Various optimization techniques were used, such as weight decay in AdamW \cite{loshchilov2017decoupled} and AMSGrad \cite{reddi2019convergence}. Gradient clipping was applied to avoid overshooting. A scheduler was used to decay the learning rate at certain epochs so that a smaller learning rate could benefit searching optimal when learning stagnated. The states of the models were saved when validation accuracy reached its maximum. Hyperparameters tuning was performed on learning rate (0.005), weight decay (0.0001), batch size (1024), embedding size (32), kernel size (5), hidden size (128), and dropout probability (0.2). The resultant hyperparameters of the best model are specified in the parentheses.
+
+Since our dataset is balanced, it is reasonable to use classification accuracy to measure performance. We also plotted the receiver operating characteristic (ROC) curve and computed the area under the curve (AUC) \cite{Fawcett_2006}. The ROC curve represents the inherent tradeoff between sensitivity and specificity. This tradeoff is helpful for practical vaccine screening to emphasize either sensitivity or specificity by varying the probability threshold.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{figs/roc}
+\end{center}
+\caption{ROC curves for the best model on training and test sets.}
+\label{fig2}
+\end{figure}
+
+We observed that the model from the original paper \cite{Yang_2021} performed poorly on our dataset, with roughly 60\% test accuracy. It indicates that this approach does not generalize well on unseen data. We instead used the logistic regression classifier on the ESM-1b embeddings as the baseline. Note that ESM-1b is a model with approximately 650 million parameters that is trained over 250 million sequences from a broad spectrum of evolutionary diversity \cite{Rives_2021}. Consequently, it is extremely slow in inference time compared to our model. From Table \ref{tab1}, we can see our best model has a significantly better performance than the baseline. Figure \ref{fig2} shows the ROC curves of the best model.
+
+We performed ablation studies to evaluate the effects of different components in the model. Experimental results of several variants of the best model are summarized in Table \ref{tab1}. Adding the one-dimensional CNN to the architecture increases the performance slightly. The cause could be that when sliding over the sequences, the convolutional kernel detects patterns of short fragments in proteins, namely motifs. Then the aggregation provides useful information to LSTM for integration. The effects of different encoding methods were compared, where amino acids are encoded individually, or two adjacent amino acids are grouped as a word and encoded. We can observe that character encoding has much better performance than encoding with a word length equal to two. We experimented with another method without pooling but instead taking the representation of the $<$eos$>$ token. The operation on the output of LSTM does not make much difference. It indicates that the $<$eos$>$ token has already contained the information of the whole sequence through the forward pass.
+
+\begin{table}
+\caption{Performance of different models. The first one is the baseline. The second one is the best model.}
+\label{tab1}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+model & word length & pooling & test accuracy & test AUC\\
+\hline
+ESM-1b + LR & - & - & 68.5\% & 0.75 \\
+CNN + LSTM & 1 & yes & \textbf{80.0\%} & \textbf{0.88} \\
+CNN + LSTM & 1 & no & 79.8\% & 0.88 \\
+LSTM & 1 & yes & 78.9\% & 0.87 \\
+LSTM & 1 & no & 78.5\% & 0.87 \\
+LSTM & 2 & yes & 76.2\% & 0.84 \\
+LSTM & 2 & no & 76.2\% & 0.84 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.3\textwidth]{figs/tsne1}}
+\hfill
+\subfloat[]{\includegraphics[width=0.3\textwidth]{figs/tsne2}}
+\hfill
+\subfloat[]{\includegraphics[width=0.3\textwidth]{figs/tsne3}}
+\caption{Visualization of the representations obtained from three methods using t-SNE. (a) Our best model. (b) ESM-1b (baseline). (c) Z-descriptors and ACC transformation. Blue and orange points represent positive and negative candidates, respectively.}
+\label{fig3}
+\end{figure}
+
+One important feature of deep learning is that neural networks can learn representations of the inputs in their hidden layers, often expressed in numerical vectors. Learned representations can lead to better performance and higher efficiency by reducing human intervention, compared to hand-crafted representations in classical machine learning \cite{LeCun_2015}. To qualitatively compare representations for our classification task, we performed t-distributed stochastic neighbor embedding (t-SNE) \cite{vandermaaten08a} to reduce the dimension of the representations for visualization in the two-dimensional plane. Figure \ref{fig3} shows the t-SNE scatter plots of embeddings resulting from applying three different methods on a subset of the test set that contains 2000 data points. The first plot visualizes the output extracted from the LSTM module in our best model. We can see some clusters and separation of the positive and negative data points, though not perfect. It suggests that the representations learned by LSTM contain useful information that helps classify the candidacy. On the other hand, the representations extracted from ESM-1b are less well-separated. The results obtained by the classification on these representations are thus less decent, as shown in Table \ref{tab1}. The representations of Z-descriptors and ACC transformation following the original paper \cite{Yang_2021} are the worst, as the positive and negative data are mixed in the visualization. For our vaccine candidate prediction problem, task-specific training outperforms task-agnostic training such as self-supervised pre-trained model.
+
+Not only the peptide sequences but also the individual amino acids can encode meaningful information in their representations. The weight matrix of the embedding layer acts as a lookup table where each row vector represents the corresponding token. For all the amino acids, we retrieved the corresponding embeddings from the weight matrix of our best model. We performed agglomerative clustering with complete linkage using Euclidean distance on these vectors \cite{mullner2011modern}. The resulting dendrogram in figure \ref{fig4} shows that amino acids with similar physicochemical properties are close to each other. For example, H and K are positively charged; D and E are negatively charged; N, Q, S are polar; F, I, L, M, V are hydrophobic. Note that the weight matrix is randomly initialized. It indicates that after learning from large data, the representations of amino acids can capture relevant information. In fact, even without prior biological information provided, the performance of the best model (80\% test accuracy) is on par with the model using the PMBEC matrix in the embedding layer (79.8\% test accuracy).
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{figs/dg}
+\end{center}
+\caption{Dendrogram of hierarchical clustering on the embeddings of 20 amino acids from the best model. Amino acids are denoted by their one letter codes.}
+\label{fig4}
+\end{figure}
+
+\section{Conclusion and Future Work}
+Deep learning, if used properly, has the potential to reduce the amount of time needed to develop vaccines drastically. In this paper, we provide a reliable dataset containing T-cell and B-cell epitopes for machine learning experiments. We present a well-performed LSTM-based model that directly takes protein sequence as input and predicts its vaccine candidacy. Our work demonstrates the power of deep learning and could help further exploration of its application on \emph{in silico} vaccine design. Future work includes predicting potential vaccine subunits based on viral sequences such as the SARS-CoV-2 spike protein sequences using our method, constructing multi-epitope vaccines, and performing thorough evaluations on the vaccines regarding population coverage, immunogenicity, physicochemical properties, etc.
+
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,protein}
+
+\end{document}
