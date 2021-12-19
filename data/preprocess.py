@@ -26,7 +26,7 @@ Negative_train = DotDict()
 Negative_test = DotDict()
 
 # %%
-data_dir = "./data"
+data_dir = ""
 Positive_T.df = pd.read_csv(os.path.join(data_dir, "Positive_T.csv"))
 Positive_B.df = pd.read_csv(os.path.join(data_dir, "Positive_B.csv"))
 Negative_T.df = pd.read_csv(os.path.join(data_dir, "Negative_T.csv"))
@@ -58,7 +58,8 @@ Negative_B.train, Negative_B.test = sample(len(Negative_B.df))
 # Create positive and negative datasets. The sequences are randomly shuffled to avoid the same pair of B and T being concatenated in T+B and B+T.
 
 # %%
-def combine(df_T, df_B, indices_T, indices_B, outfile, outdir="./data"):
+def combine(df_T, df_B, indices_T, indices_B, outfile, outdir=""):
+    """Combines dataframes and saves as a file."""
     list_TB = (
         df_T.iloc[indices_T, 1].reset_index(drop=True)
         + df_B.iloc[indices_B, 1].reset_index(drop=True)
