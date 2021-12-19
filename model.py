@@ -67,7 +67,7 @@ class RNN(nn.Module):
         if self.pooling:
             outputs = torch.mean(outputs, 1)  # average all the tokens
         else:
-            # outputs = outputs[:, -1, :] # take the last token
+            # outputs = outputs[:, -1, :]  # take the last token
             eos_indices = torch.nonzero(
                 inputs == self.tokenizer.stoi["<eos>"], as_tuple=True
             )

@@ -59,6 +59,7 @@ Negative_B.train, Negative_B.test = sample(len(Negative_B.df))
 
 # %%
 def combine(df_T, df_B, indices_T, indices_B, outfile, outdir="./data"):
+    """Combines dataframes and saves as a file."""
     list_TB = (
         df_T.iloc[indices_T, 1].reset_index(drop=True)
         + df_B.iloc[indices_B, 1].reset_index(drop=True)
