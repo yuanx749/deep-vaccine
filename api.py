@@ -2,6 +2,8 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 
+from data import read_fasta as _read_fasta
+
 
 class _SequenceDataset(Dataset):
     def __init__(self, seqs, tokenizer):
@@ -69,3 +71,29 @@ class Predictor:
             A boolean array indicating the vaccine subunit candidates.
         """
         return self.predict_proba(seqs) > threshold
+
+
+def read_fasta(filename, data_dir="./data"):
+    """Read sequences from a FASTA file.
+
+    Args:
+        filename: A string of the name of the FASTA file.
+        data_dir: A string of the directory of the file.
+
+    Returns:
+        A string list of sequences.
+    """
+    return _read_fasta(filename, data_dir=data_dir)
+
+
+def extract_kmers(seq, k):
+    """Extract k-mers from a sequence.
+
+    Args:
+        seq: A string of a sequence.
+        k: An integer representing the length of k-mer.
+
+    Returns:
+        A string list of the k-mers.
+    """
+    return [seq[i : i + k] for i in range(len(seq) - k + 1)]

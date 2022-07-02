@@ -28,6 +28,8 @@ predictor = Predictor(path_to_model)
 predictor.predict_proba(seqs)
 ```
 
+An application on the spike protein of SARS-CoV-2 is in `example.py`.
+
 ## Misc.
 - Models: (CNN+) LSTM/GRU, Transformer
 - Different tokenizers and pooling

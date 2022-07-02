@@ -18,6 +18,7 @@ def read_fasta(filename, data_dir="./data"):
                 seqs.append(seq)
             else:
                 seq += line.strip()
+    seqs.append(seq)
     return seqs
 
 
