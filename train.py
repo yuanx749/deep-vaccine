@@ -1,7 +1,7 @@
-import os
 import random
 import socket
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -124,9 +124,9 @@ def run_experiment(hparams, epochs=50):
     criterion = nn.CrossEntropyLoss()
 
     current_time = datetime.now().strftime("%b%d_%H-%M-%S")
-    log_dir = os.path.join("runs", current_time + "_" + socket.gethostname())
+    log_dir = Path("runs", current_time + "_" + socket.gethostname())
     writer = SummaryWriter(log_dir=log_dir)
-    model_path = os.path.join(log_dir, "lstm.pt")
+    model_path = log_dir / "lstm.pt"
 
     best_valid_loss = 0
     best_valid_acc = 0

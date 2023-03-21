@@ -1,5 +1,5 @@
-import os
 from itertools import product
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 def read_fasta(filename, data_dir="./data"):
     seqs = []
-    with open(os.path.join(data_dir, filename)) as f:
+    with open(Path(data_dir, filename)) as f:
         for line in f:
             if line[0] == ">":
                 seq = ""
@@ -24,7 +24,7 @@ def read_fasta(filename, data_dir="./data"):
 
 def read_txt(filename, data_dir="./data"):
     lines = []
-    with open(os.path.join(data_dir, filename)) as f:
+    with open(Path(data_dir, filename)) as f:
         lines = [line.rstrip() for line in f]
         lines = [line for line in lines if line]
     return lines
@@ -32,7 +32,7 @@ def read_txt(filename, data_dir="./data"):
 
 def read_matrix(filename, data_dir="./data"):
     mat = []
-    with open(os.path.join(data_dir, filename)) as f:
+    with open(Path(data_dir, filename)) as f:
         aa_lst = f.readline().split()
         for line in f:
             mat.append(list(map(float, line.split()[1:])))
@@ -102,8 +102,8 @@ class BaselineDataset(Dataset):
 
     def __init__(self, seq_file, label_file, tokenizer=Tokenizer(), data_dir="./data"):
         self.tokenizer = tokenizer
-        self.data = torch.load(os.path.join(data_dir, seq_file))
-        self.labels = torch.load(os.path.join(data_dir, label_file))
+        self.data = torch.load(Path(data_dir, seq_file))
+        self.labels = torch.load(Path(data_dir, label_file))
 
     def __len__(self):
         return len(self.data)
@@ -132,7 +132,7 @@ class AntigenDataset(BaselineDataset):
 
     def __init__(self, file, tokenizer=Tokenizer(), data_dir="./data"):
         self.tokenizer = tokenizer
-        with open(os.path.join(data_dir, file)) as f:
+        with open(Path(data_dir, file)) as f:
             lines = f.read().splitlines()
         self.data = lines
         self.labels = [1] * (len(lines) // 2) + [0] * (len(lines) // 2)
@@ -149,22 +149,22 @@ class EpitopeDataset(BaselineDataset):
         self.tokenizer = tokenizer
         self.raw_data, self.labels = [], []
         if positive_file.endswith("csv"):
-            with open(os.path.join(data_dir, positive_file)) as csvfile:
+            with open(Path(data_dir, positive_file)) as csvfile:
                 next(csvfile)
                 for line in csvfile:
                     self.raw_data.append(line.strip().split(",")[1])
                     self.labels.append(1)
-            with open(os.path.join(data_dir, negative_file)) as csvfile:
+            with open(Path(data_dir, negative_file)) as csvfile:
                 next(csvfile)
                 for line in csvfile:
                     self.raw_data.append(line.strip().split(",")[1])
                     self.labels.append(0)
         else:
-            with open(os.path.join(data_dir, positive_file)) as f:
+            with open(Path(data_dir, positive_file)) as f:
                 lines = f.read().splitlines()
                 self.raw_data += lines
                 self.labels += [1] * len(lines)
-            with open(os.path.join(data_dir, negative_file)) as f:
+            with open(Path(data_dir, negative_file)) as f:
                 lines = f.read().splitlines()
                 self.raw_data += lines
                 self.labels += [0] * len(lines)
@@ -195,8 +195,8 @@ class NpyDataset(Dataset):
     """
 
     def __init__(self, positive_file, negative_file, data_dir="./data"):
-        positive_data = np.load(os.path.join(data_dir, positive_file))
-        negative_data = np.load(os.path.join(data_dir, negative_file))
+        positive_data = np.load(Path(data_dir, positive_file))
+        negative_data = np.load(Path(data_dir, negative_file))
         self.data = np.vstack((positive_data, negative_data)).astype(np.float32)
         self.labels = [1] * len(positive_data) + [0] * len(negative_data)
 
