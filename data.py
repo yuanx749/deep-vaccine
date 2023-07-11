@@ -40,10 +40,10 @@ def read_matrix(filename, data_dir="./data"):
 
 
 class Tokenizer:
-    def __init__(self, tokens=["<unk>", "<pad>", "<eos>"], max_len=50):
+    def __init__(self, tokens=("<unk>", "<pad>", "<eos>"), max_len=50):
         self.tokens = tokens
         self.max_len = max_len
-        self.itos = tokens + list("ACDEFGHIKLMNPQRSTVWY")
+        self.itos = tokens + tuple("ACDEFGHIKLMNPQRSTVWY")
         self.stoi = dict(zip(self.itos, range(len(self.itos))))
         self.vocab_size = len(self.itos)
 
@@ -54,7 +54,7 @@ class Tokenizer:
 
     def tokenize(self, seq):
         """Truncates and tokenizes the sequence."""
-        tokens = [c for c in seq]
+        tokens = list(seq)
         tokens = tokens[: self.max_len]
         if "<eos>" in self.tokens:
             tokens.append("<eos>")
@@ -73,10 +73,10 @@ class Tokenizer:
 
 
 class Tokenizer2(Tokenizer):
-    def __init__(self, tokens=["<unk>", "<pad>", "<eos>"], max_len=50, word_len=2):
+    def __init__(self, tokens=("<unk>", "<pad>", "<eos>"), max_len=50, word_len=2):
         super().__init__(tokens, max_len)
         self.word_len = word_len
-        self.itos = tokens + list(
+        self.itos = tokens + tuple(
             map("".join, product("ACDEFGHIKLMNPQRSTVWY", repeat=word_len))
         )
         self.stoi = dict(zip(self.itos, range(len(self.itos))))
