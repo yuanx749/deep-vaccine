@@ -35,13 +35,4 @@ An application on the spike protein of SARS-CoV-2 is in `example.py`.
 - Different tokenizers and pooling
 - Visualize models, data, training: `tensorboard --logdir=runs`
 
-If you find this helpful, please consider citing:
-```BibTeX
-@INPROCEEDINGS{9635304,
-    author={Yuan, Xiao and Bibl, Daniel and Khan, Kahlil and Sun, Lei},
-    booktitle={2021 IEEE 21st International Conference on Bioinformatics and Bioengineering (BIBE)},
-    title={Predicting Multi-Epitope Vaccine Candidates Using Natural Language Processing and Deep Learning},
-    year={2021},
-    doi={10.1109/BIBE52308.2021.9635304}
-}
-```
+If you find this helpful, please consider citing ([bib](CITATION.bib)).
