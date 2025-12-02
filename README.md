@@ -1,6 +1,8 @@
 # deep-vaccine
 Predict multi-epitope vaccine subunit candidates using NLP.
 
+This work is based on a class project.
+
 ## Data
 [Immune Epitope Database (IEDB)](https://www.iedb.org/)
 
